@@ -438,7 +438,7 @@ public abstract class RolapAggregator
     /**
      * Returns the expression to apply this aggregator to an operand.
      * For example, <code>getExpression("emp.sal")</code> returns
-     * <code>"sum(emp.sal)"</code>.
+     * <code>"sum(emp.sal)"</code>.TODO 需要修改
      */
     public String getExpression(String operand) {
         StringBuilder buf = new StringBuilder(64);
