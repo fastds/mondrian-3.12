@@ -10,15 +10,22 @@
 */
 package mondrian.rolap;
 
+import java.util.Arrays;
+import java.util.List;
+
 import mondrian.calc.Calc;
 import mondrian.calc.TupleList;
-import mondrian.olap.*;
+import mondrian.olap.Aggregator;
+import mondrian.olap.EnumeratedValues;
+import mondrian.olap.Evaluator;
+import mondrian.olap.MondrianException;
 import mondrian.olap.fun.AggregateFunDef;
 import mondrian.olap.fun.FunUtil;
+import mondrian.sampling.SampleContext;
+import mondrian.sampling.SampleInfo;
+import mondrian.sampling.SampleInfoReader;
 import mondrian.spi.Dialect;
 import mondrian.spi.Dialect.Datatype;
-
-import java.util.List;
 
 /**
  * Describes an aggregation operator, such as "sum" or "count".
@@ -255,6 +262,7 @@ public abstract class RolapAggregator
 
     /**
      * List of all valid aggregation operators.
+     * 有效的聚集操作的列表
      */
     public static final EnumeratedValues<RolapAggregator> enumeration =
         new EnumeratedValues<RolapAggregator>(
@@ -263,7 +271,7 @@ public abstract class RolapAggregator
     /**
      * This is the base class for implementing aggregators over sum and
      * average columns in an aggregate table. These differ from the above
-     * aggregators in that these require not oly the operand to create
+     * aggregators in that these require not only the operand to create
      * the aggregation String expression, but also, the aggregate table's
      * fact count column expression.
      * These aggregators are NOT singletons like the above aggregators; rather,
@@ -291,7 +299,7 @@ public abstract class RolapAggregator
     /**
      * Aggregator used for aggregate tables implementing the
      * average aggregator.
-     *
+     * 实现了avg聚集才做的用户聚集表的聚集操作
      * <p>It uses the aggregate table fact_count column
      * and a sum measure to create the query used to generate an average:
      * <blockquote>
@@ -394,6 +402,7 @@ public abstract class RolapAggregator
         public SumFromAvg(String factCountExpr) {
             super("SumFromAvg", factCountExpr);
         }
+        // TODO 这里也需要修改
         public String getExpression(String operand) {
             StringBuilder buf = new StringBuilder(64);
             buf.append("sum(");
@@ -408,7 +417,7 @@ public abstract class RolapAggregator
         public boolean alwaysRequiresFactColumn() {
             return true;
         }
-
+        // TODO 待修改
         @Override
         public String getScalarExpression(String operand) {
             return new StringBuilder(64)
@@ -438,18 +447,62 @@ public abstract class RolapAggregator
     /**
      * Returns the expression to apply this aggregator to an operand.
      * For example, <code>getExpression("emp.sal")</code> returns
-     * <code>"sum(emp.sal)"</code>.TODO 需要修改
+     * <code>"sum(emp.sal)"</code>
      */
     public String getExpression(String operand) {
-        StringBuilder buf = new StringBuilder(64);
-        buf.append(name);
-        buf.append('(');
-        if (distinct) {
-            buf.append("distinct ");
+    	
+    	//TODO count(*)情形如何处理
+    	StringBuilder buf = new StringBuilder(64);
+    	//检查是否从样本表进行计算
+    	String tableWithQuote = operand.split("\\.")[0];
+    	String table = tableWithQuote.substring(1,tableWithQuote.length()-1);
+    	boolean isSampleTable = false;
+    	if(SampleContext.getTablesNeededSampling().contains(table.toLowerCase())){
+    		for(SampleInfo info:SampleInfoReader.sampleInfos){
+    			if(info.getOriginTable().equalsIgnoreCase(table)){
+    				isSampleTable = true;
+    				break;
+    			}
+    		}
+    	}
+    	
+    	//不从样本表进行计算，进行常规处理
+    	if(!isSampleTable){
+    		buf.append(name);
+	        buf.append('(');
+	        if (distinct) {
+	        	buf.append("distinct ");
+	        }
+	        buf.append(operand);
+	        buf.append(')');
+	        return buf.toString();
+    	}
+    	
+    	//-------------以下为基于样本运算的查询重写--------------
+    	
+    	//TODO 如果为distinct操作，抛出异常（暂时不支持该聚集运算）
+    	if(distinct)
+    		throw new RuntimeException("不支持基于样本的distinct运算");
+    	
+    	//否则，根据具体的聚集操作进行查询重写
+        if(name.equals("sum")){
+        	buf.append(name);
+	        buf.append("((");
+	        buf.append(operand);
+	        buf.append(")*sf)");
+        }else if(name.equals("count")){
+        	buf.append("sum(sf)");
+        }else if(name.equals("avg")){
+        	buf.append(name);
+	        buf.append('(');
+	        buf.append(operand);
+	        buf.append(')');
+        }else{	//TODO	min/max/distinct-count 	抛出异常,不支持该聚集运算
+        	throw new RuntimeException("不支持基于样本的聚集运算："+name);
         }
-        buf.append(operand);
-        buf.append(')');
+        
         return buf.toString();
+       
     }
 
     /**

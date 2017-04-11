@@ -1,17 +1,23 @@
 package mondrianTest;  
   
-import java.io.PrintWriter;  
-import java.sql.Connection;  
-import java.sql.DriverManager;  
-import java.sql.SQLException;  
-import org.olap4j.Cell;  
-import org.olap4j.CellSet;  
-import org.olap4j.OlapConnection;  
-import org.olap4j.OlapException;  
-import org.olap4j.OlapStatement;  
-import org.olap4j.OlapWrapper;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olap4j.Cell;
+import org.olap4j.CellSet;
+import org.olap4j.OlapConnection;
+import org.olap4j.OlapException;
+import org.olap4j.OlapStatement;
 import org.olap4j.Position;
-import org.olap4j.metadata.Member;  
+import org.olap4j.metadata.Member;
+import org.pentaho.ui.xul.samples.SampleEventHandler;
+
+import mondrian.sampling.SampleContext;
+import mondrian.sampling.SampleInfoReader;  
   
 public class Olap4jTest {         
     /** 
@@ -43,6 +49,14 @@ public class Olap4jTest {
       
      public void testQuery(){                 
          OlapConnection connection = null;  
+         //加载样本元信息
+         SampleInfoReader.loadSampleInfo();
+         //设置需要从样本进行查询的表
+         List<String> tables = new ArrayList();
+         tables.add("inventory_fact_1997");
+         SampleContext.setTablesNeededSampling(tables);
+         
+         System.out.println(SampleInfoReader.sampleInfos);
         try {  
             connection = getConnection("jdbc:mondrian:" +   
                             "Jdbc=jdbc:mysql://localhost:3306/foodmart?user=root&password=zhouyu4444;" +  
@@ -52,7 +66,6 @@ public class Olap4jTest {
         } catch (SQLException e1) {  
             e1.printStackTrace();  
         }  
-  
 //        String query = "SELECT  { [Measures].[Unit Sales] } on columns,{ [Time].[Year].[1997] } on rows FROM Sales  WHERE ([Customers].[State Province].[CA])";  
 //        String query = "SELECT {[Measures].[Store Sqft]} on columns FROM Store";
         String query = "SELECT {[Measures].[Warehouse Sales]} ON COLUMNS, {[Store Type].[All Store Types]} ON ROWS FROM [Warehouse]";

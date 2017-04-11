@@ -210,7 +210,7 @@ public class RolapNativeSql {
             } else {
                 MondrianDef.Expression defExp =
                     measure.getMondrianDefExpression();
-                exprInner = (defExp == null)
+                exprInner = (defExp == null)	//TODO count(*)
                     ? "*" : defExp.getExpression(sqlQuery);
             }
 

@@ -12,6 +12,9 @@ package mondrian.rolap.sql;
 
 import mondrian.olap.*;
 import mondrian.rolap.*;
+import mondrian.sampling.SampleContext;
+import mondrian.sampling.SampleInfo;
+import mondrian.sampling.SampleInfoReader;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
 import mondrian.util.Pair;
@@ -271,7 +274,20 @@ public class SqlQuery {
         }
 
         buf.setLength(0);
-        dialect.quoteIdentifier(buf, schema, name);
+        //TODO 以后将这个标志改为需要从样本查询的表集合判断
+        if(SampleContext.getTablesNeededSampling().contains(name.toLowerCase())){
+        	boolean isFinded = false;
+        	for(SampleInfo info : SampleInfoReader.sampleInfos){
+        		if(info.getOriginTable().toLowerCase().equals(name.toLowerCase())){
+        			isFinded = true;
+        			dialect.quoteIdentifier(buf, schema, info.getSampleTable());
+        			break;
+        		}
+        	}
+        	if(!isFinded)
+        		dialect.quoteIdentifier(buf, schema, name);
+        }else
+        	dialect.quoteIdentifier(buf, schema, name);
         if (alias != null) {
             Util.assertTrue(alias.length() > 0);
 

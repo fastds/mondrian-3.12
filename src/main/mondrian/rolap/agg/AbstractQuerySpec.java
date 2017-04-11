@@ -68,7 +68,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
         }
         Util.assertTrue(measure.getTable() == getStar().getFactTable());
         measure.getTable().addToFrom(sqlQuery, false, true);
-
+        //TODO 这里的count(*)操作如何对应修改
         String exprInner =
             measure.getExpression() == null
                 ? "*"

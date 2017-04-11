@@ -19,8 +19,8 @@ public class DBUtil {
 	}
 	public static Connection getConnection(){
 		try {
-			if(con == null)
-				con = DriverManager.getConnection("jdbc:mysql://192.168.181.128:3306/sampling", "root", "123");
+			if(con == null)//192.168.181.128 vm psw:123
+				con = DriverManager.getConnection("jdbc:mysql://localhost:3306/foodmart", "root", "zhouyu4444");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -29,7 +29,7 @@ public class DBUtil {
 	public DBUtil(){
 		try {
 			if(this.con == null)
-				this.con = DriverManager.getConnection("jdbc:mysql://192.168.181.128:3306/sampling", "root", "123");
+				this.con = DriverManager.getConnection("jdbc:mysql://localhost:3306/foodmart", "root", "zhouyu4444");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

@@ -29,7 +29,7 @@ import java.util.*;
  * This class is used to create "lost" and "collapsed" aggregate table
  * creation sql (creates the rdbms table and inserts into it from the base
  * fact table).
- *
+ * 创建丢失的聚集表。（创建关系表，并从事实表插入数据）
  * @author Richard M. Emberson
  */
 public class AggGen {
@@ -781,7 +781,7 @@ public class AggGen {
             pw.println(',');
         }
 
-        // do fact_count
+        // do fact_count TODO 基于样本计算时，需要替换
         pw.print(prefix);
         pw.print("COUNT(*) AS ");
         pw.println(sqlQuery.getDialect().quoteIdentifier(getFactCount()));
