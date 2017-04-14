@@ -27,7 +27,7 @@ import db.DBUtil;
  * 3)生成的样本表名
  * 4)抽样率
  * 
- * TODO 描述如下:
+ * 描述如下:
  * 2、基于多个表的进行抽样(事实表+维表)
  * 输入：
  * 1)需要进行抽样的表、抽样需要进行连接的表
@@ -47,7 +47,7 @@ public class CongressionalSampling {
 	//与操作的表相关的信息
 	private String originTable ;								//required
 	private String sampleTable ;								//required
-	private List<String> joinTables;				//optional 与抽样表进行连接的表以及要进行group-by操作的属性
+	private List<String> joinTables;							//optional 与抽样表进行连接的表以及要进行group-by操作的属性
 	private Map<String, String> mappingJoinAttrs;				//optional 抽样表与连接表的连接属性映射
 	private List<String> groupingAttrs;
 	private List<String> groupingAttrsType;

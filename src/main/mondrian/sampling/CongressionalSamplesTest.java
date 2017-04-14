@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.junit.Test;
 
@@ -196,5 +197,14 @@ public class CongressionalSamplesTest {
 				(int) Math.ceil(((hi-lo)*(hi-lo)*Math.log(2/(1-confidence)))/(2*error*error));
 		System.out.println("sample Size:" + sampleSize);
 		
+	}
+	@Test
+	public void testRandom(){
+		Random rand = new Random();
+		for(int i=0;i<100;i++){
+			if(rand.nextInt(2) == 2)
+				System.out.println("2");
+		}
+			
 	}
 }
